@@ -12,32 +12,17 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-      # Optional: GitHub-hosted Postgres service if you want, but we use your Docker Compose DB
-      # db:
-      #   image: postgres:15
-      #   env:
-      #     POSTGRES_USER: postgres
-      #     POSTGRES_PASSWORD: akash
-      #     POSTGRES_DB: fintech
-      #   ports:
-      #     - 5432:5432
-      #   options: >-
-      #     --health-cmd="pg_isready -U postgres"
-      #     --health-interval=5s
-      #     --health-timeout=5s
-      #     --health-retries=5
 
     steps:
       # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Docker engine (needed for docker compose)
+      # 2️⃣ Set up Docker engine
       - name: Set up Docker
         uses: docker/setup-docker@v3
 
-      # 3️⃣ Install Docker Compose (v2)
+      # 3️⃣ Install Docker Compose v2
       - name: Install Docker Compose v2
         run: |
           DOCKER_COMPOSE_VERSION=2.22.0
@@ -65,7 +50,9 @@ jobs:
 
       # 7️⃣ Build frontend
       - name: Build frontend
-        run: docker exec fintech-frontend npm install && docker exec fintech-frontend npm run build -- --configuration production
+        run: |
+          docker exec fintech-frontend npm install
+          docker exec fintech-frontend npm run build -- --configuration production
 
       # 8️⃣ Run end-to-end tests only on main
       - name: Run E2E tests
