@@ -1,0 +1,14 @@
+<h2>Transactions</h2>
+
+<table>
+  <tr>
+    <th>Amount</th>
+    <th>Status</th>
+  </tr>
+
+  <tr *ngFor="let t of transactions">
+    <td>{{ t.amount }}</td>
+    <td>{{ t.status }}</td>
+  </tr>
+</table>
+

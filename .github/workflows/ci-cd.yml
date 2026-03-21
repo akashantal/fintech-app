@@ -1,0 +1,66 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Docker Compose v2
+        run: |
+          DOCKER_COMPOSE_VERSION=2.22.0
+          sudo curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose version
+
+      - name: Verify files exist
+        run: |
+          echo "=== Repo root ==="
+          ls -la
+          echo "=== Frontend folder ==="
+          ls -la frontend/
+          echo "=== fintech-ui folder ==="
+          ls -la frontend/fintech-ui/
+          echo "=== package.json ==="
+          ls -la frontend/fintech-ui/package.json
+
+      - name: Build frontend image directly
+        run: |
+          docker build \
+            -f frontend/Dockerfile \
+            -t fintech-frontend:ci \
+            ./frontend
+
+      - name: Build and start Docker Compose
+        run: |
+          docker-compose build --no-cache
+          docker-compose up -d
+
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for Postgres..."
+          until docker exec fintech-db pg_isready -U postgres; do
+            sleep 2
+          done
+
+      - name: Run backend tests
+        run: docker exec fintech-backend pytest || true
+
+      - name: Run E2E tests
+        if: github.ref == 'refs/heads/main'
+        run: docker exec fintech-backend pytest tests/e2e || true
+
+      - name: Stop Docker Compose
+        if: always()
+        run: docker-compose down

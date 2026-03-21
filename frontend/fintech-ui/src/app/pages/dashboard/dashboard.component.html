@@ -1,0 +1,178 @@
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">A&#8383;</div>
+      <div class="logo-text">Antal<span>Fintech</span></div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active">
+        <span class="nav-icon">&#9672;</span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+      <div class="nav-item" routerLink="/transactions">
+        <span class="nav-icon">&#8644;</span>
+        <span class="nav-label">Transactions</span>
+      </div>
+      <div class="nav-item" routerLink="/send-money">
+        <span class="nav-icon">&#8593;</span>
+        <span class="nav-label">Send money</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar">{{ initials }}</div>
+        <div class="user-info">
+          <div class="user-name">User #{{ userId }}</div>
+          <div class="user-role">Personal account</div>
+        </div>
+        <button class="logout-btn" (click)="logout()" title="Logout">&#9211;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div>
+        <div class="page-title">Good {{ greeting }}, User</div>
+        <div class="page-sub">Here's your financial overview</div>
+      </div>
+      <div class="live-badge">&#9679; Live</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Wallet balance</div>
+        <div class="stat-val blue">
+          <span *ngIf="is_loading">Loading...</span>
+          <span *ngIf="!is_loading">&#8377; {{ balance | number:'1.2-2' }}</span>
+        </div>
+        <div class="stat-change">Your current balance</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total sent</div>
+        <div class="stat-val">&#8377; {{ totalSent | number:'1.2-2' }}</div>
+        <div class="stat-change">{{ sentCount }} transfers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total received</div>
+        <div class="stat-val green">&#8377; {{ totalReceived | number:'1.2-2' }}</div>
+        <div class="stat-change up">{{ receivedCount }} credits</div>
+      </div>
+    </div>
+
+    <!-- ADD MONEY + TRANSFER -->
+    <div class="grid-2">
+
+      <!-- ADD MONEY -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-dot green"></div>
+          Add money
+        </div>
+        <div class="field">
+          <label>Amount (&#8377;)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">&#8377;</span>
+            <input type="number" [(ngModel)]="amount" placeholder="0.00" min="1" />
+          </div>
+        </div>
+        <div class="success-msg" *ngIf="addMoneySuccess">{{ addMoneySuccess }}</div>
+        <div class="error-msg" *ngIf="addMoneyError">{{ addMoneyError }}</div>
+        <button class="btn btn-green" (click)="addMoney()" [disabled]="is_loading">
+          {{ is_loading ? 'Processing...' : 'Add to wallet' }}
+        </button>
+      </div>
+
+      <!-- TRANSFER -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-dot blue"></div>
+          Transfer money
+        </div>
+        <div class="field">
+          <label>Receiver ID</label>
+          <input type="number" [(ngModel)]="receiver_id" placeholder="Enter user ID" min="1" />
+        </div>
+        <div class="field">
+          <label>Amount (&#8377;)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">&#8377;</span>
+            <input type="number" [(ngModel)]="transfer_amount" placeholder="0.00" min="1" />
+          </div>
+        </div>
+        <div class="success-msg" *ngIf="transferSuccess">{{ transferSuccess }}</div>
+        <div class="error-msg" *ngIf="transferError">{{ transferError }}</div>
+        <button class="btn btn-blue" (click)="transferMoney()" [disabled]="is_loading">
+          {{ is_loading ? 'Processing...' : 'Send money' }}
+        </button>
+      </div>
+
+    </div>
+
+    <!-- TRANSACTION HISTORY -->
+    <div class="tx-card">
+      <div class="tx-header">
+        <div class="tx-title">
+          <div class="card-title-dot"></div>
+          Transaction history
+        </div>
+        <span class="tx-count">{{ transactions.length }} transactions</span>
+      </div>
+
+      <div class="empty-state" *ngIf="transactions.length === 0 && !is_loading">
+        No transactions yet
+      </div>
+
+      <div class="table-wrap" *ngIf="transactions.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of transactions">
+              <td class="tx-id">#{{ tx.id }}</td>
+              <td>
+                <span class="tx-type tx-credit" *ngIf="tx.receiver_id === userId">
+                  &#8595; Credit
+                </span>
+                <span class="tx-type tx-debit" *ngIf="tx.sender_id === userId">
+                  &#8593; Debit
+                </span>
+              </td>
+              <td>
+                <span class="tx-amount pos" *ngIf="tx.receiver_id === userId">
+                  +&#8377;{{ tx.amount | number:'1.2-2' }}
+                </span>
+                <span class="tx-amount neg" *ngIf="tx.sender_id === userId">
+                  -&#8377;{{ tx.amount | number:'1.2-2' }}
+                </span>
+              </td>
+              <td class="tx-date">{{ tx.created_at | date:'MMM d, y, h:mm a' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loader-overlay" *ngIf="is_loading">
+  <div class="spinner"></div>
+</div>
