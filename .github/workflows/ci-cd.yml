@@ -55,8 +55,8 @@ jobs:
         run: docker exec fintech-backend pytest || true
 
       # 7️⃣ Build frontend
-      - name: Build frontend
-        run: docker compose build frontend
+      - name: Build frontend Docker image
+        run: docker build -t fintech-frontend:ci ./frontend
 
       # 8️⃣ Run end-to-end tests only on main branch
       - name: Run E2E tests
