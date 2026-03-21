@@ -12,23 +12,14 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:24.0.5
-        options: --privileged
-        ports:
-          - 2375:2375
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Docker Buildx (for multi-platform builds)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3️⃣ Install Docker Compose v2
       - name: Install Docker Compose v2
         run: |
           DOCKER_COMPOSE_VERSION=2.22.0
@@ -36,13 +27,11 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
 
-      # 4️⃣ Build and start Docker Compose
       - name: Build and start Docker Compose
         run: |
           docker-compose build
           docker-compose up -d
 
-      # 5️⃣ Wait for Postgres DB
       - name: Wait for Postgres to be ready
         run: |
           echo "Waiting for Postgres..."
@@ -50,20 +39,13 @@ jobs:
             sleep 2
           done
 
-      # 6️⃣ Run backend tests
       - name: Run backend tests
         run: docker exec fintech-backend pytest || true
 
-      # 7️⃣ Build frontend
-      - name: Build frontend Docker image
-        run: docker build -t fintech-frontend:ci ./frontend
-
-      # 8️⃣ Run end-to-end tests only on main branch
       - name: Run E2E tests
         if: github.ref == 'refs/heads/main'
         run: docker exec fintech-backend pytest tests/e2e || true
 
-      # 9️⃣ Clean up
       - name: Stop Docker Compose
         if: always()
         run: docker-compose down
