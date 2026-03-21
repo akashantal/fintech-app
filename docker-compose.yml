@@ -27,8 +27,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: fintech-ui/Dockerfile
+      context: ./frontend/fintech-ui
+      dockerfile: Dockerfile
     container_name: fintech-frontend
     ports:
       - "4200:80"
