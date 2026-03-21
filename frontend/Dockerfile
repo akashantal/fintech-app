@@ -4,11 +4,11 @@ FROM node:18 AS build
 WORKDIR /app
 
 # Copy package.json & package-lock.json
-COPY fintech-ui/package*.json ./
+COPY ./fintech-ui/package*.json ./
 RUN npm install
 
 # Copy all Angular source files
-COPY fintech-ui/ ./
+COPY ./fintech-ui/ ./
 RUN npm run build -- --configuration production
 
 # Step 2: Serve with nginx
