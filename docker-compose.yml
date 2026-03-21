@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:15
+    container_name: fintech-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: akash
+      POSTGRES_DB: fintech
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # avoid conflict with local postgres
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fintech-backend
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:akash@db:5432/fintech
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: fintech-ui/Dockerfile
+    container_name: fintech-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: fintech-network
