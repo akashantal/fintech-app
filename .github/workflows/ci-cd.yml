@@ -56,7 +56,7 @@ jobs:
 
       # 7️⃣ Build frontend
       - name: Build frontend
-        run: docker exec fintech-frontend npm install && docker exec fintech-frontend npm run build -- --configuration production
+        run: docker compose build frontend
 
       # 8️⃣ Run end-to-end tests only on main branch
       - name: Run E2E tests
