@@ -1,0 +1,59 @@
+name: Fintech App CI/CD with E2E
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  docker-compose-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Set up Docker Buildx
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # 3️⃣ Start all services
+      - name: Start Docker Compose services
+        run: |
+          docker-compose up -d
+          echo "Waiting for Postgres..."
+          until docker exec fintech-db pg_isready -U postgres; do sleep 2; done
+          echo "Database is ready ✅"
+
+      # 4️⃣ Wait for backend API to be ready
+      - name: Wait for Backend
+        run: |
+          echo "Waiting for backend API to be ready..."
+          until curl -s http://localhost:8000/ >/dev/null; do sleep 2; done
+          echo "Backend is ready ✅"
+
+      # 5️⃣ Run backend tests inside backend container
+      - name: Run Backend Tests
+        run: docker exec fintech-backend pytest tests/
+
+      # 6️⃣ Build frontend inside frontend container
+      - name: Build Frontend
+        run: |
+          docker exec fintech-frontend npm install
+          docker exec fintech-frontend npm run build -- --configuration production
+
+      # 7️⃣ Optional: Run frontend E2E tests
+      - name: Run Frontend E2E Tests
+        run: |
+          docker exec fintech-frontend npm install
+          docker exec fintech-frontend npm run e2e
+
+      # 8️⃣ Tear down Docker Compose
+      - name: Stop Services
+        run: docker-compose down
