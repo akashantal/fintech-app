@@ -6,7 +6,7 @@ COPY fintech-ui/package*.json ./
 RUN npm install
 
 COPY fintech-ui/ ./
-RUN npm run build --configuration production
+RUN npm run build -- --configuration production
 
 # Stage 2: Serve with nginx
 FROM nginx:alpine
