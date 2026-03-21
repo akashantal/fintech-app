@@ -10,20 +10,19 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './register.component.html'
 })
 export class RegisterComponent {
+  full_Name = '';
+  username = '';
   email = '';
   password = '';
-  full_Name = '';
 
   constructor(private api: ApiService, private router: Router) {}
 
   register() {
-    this.api.register(this.email, this.password, this.full_Name).subscribe({
+    this.api.register(this.full_Name, this.username, this.email, this.password).subscribe({
       next: (res: any) => {
         console.log('Register success', res);
         localStorage.setItem('token', res.access_token);
-        localStorage.setItem('user_id', res.user_Id);
-
-        // 👉 After register, go to login
+        localStorage.setItem('user_id', res.user_id);
         this.router.navigate(['/login']);
       },
       error: (err) => {

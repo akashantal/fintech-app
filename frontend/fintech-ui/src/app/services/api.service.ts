@@ -6,15 +6,16 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ApiService {
 
-  baseUrl = 'http://localhost:8000';  // remove trailing slash
+  baseUrl = 'http://localhost:8000';
 
   constructor(private http: HttpClient) {}
 
-  register(email: string, password: string, full_Name: string) {
-    return this.http.post(`${this.baseUrl}/auth/register`, { 
-      email, 
-      password, 
-      full_name: full_Name 
+  register(full_name: string, username: string, email: string, password: string) {
+    return this.http.post(`${this.baseUrl}/auth/register`, {
+      full_name,
+      username,
+      email,
+      password
     });
   }
 

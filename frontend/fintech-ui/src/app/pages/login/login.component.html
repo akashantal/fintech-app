@@ -1,13 +1,156 @@
-<h2>Login</h2>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<input [(ngModel)]="email" placeholder="Email" />
-<br />
+<div class="page-bg">
+  <div class="bg-orb1"></div>
+  <div class="bg-orb2"></div>
+  <div class="grid-lines"></div>
 
-<input [(ngModel)]="password" type="password" placeholder="Password" />
-<br />
+  <div class="container">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="logo">
+        <div class="logo-icon">A₿</div>
+        <div class="logo-text">Antal<span>Fintech</span></div>
+      </div>
 
-<button (click)="login()">Login</button>
+      <div class="left-content">
+        <div class="tagline">Your money,<br><span class="gradient-text">moving smarter.</span></div>
+        <div class="sub">Instant transfers, real-time balance tracking, and complete transaction history — all in one place.</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-val">₹2.4M</div>
+            <div class="stat-label">Transferred</div>
+          </div>
+          <div class="divider-v"></div>
+          <div class="stat">
+            <div class="stat-val">12K+</div>
+            <div class="stat-label">Users</div>
+          </div>
+          <div class="divider-v"></div>
+          <div class="stat">
+            <div class="stat-val">99.9%</div>
+            <div class="stat-label">Uptime</div>
+          </div>
+        </div>
+      </div>
 
-<a routerLink="/register" style="color: blue; cursor: pointer;">
-  Register
-</a>
+      <div class="ticker">
+        <div class="tick"><div class="tick-dot"></div>Live</div>
+        <div class="tick">NIFTY 23,412</div>
+        <div class="tick">BTC ₹68.2L</div>
+        <div class="tick">USD ₹83.4</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab" [class.active]="activeView === 'login'" (click)="activeView = 'login'">Sign in</button>
+        <button class="tab" [class.active]="activeView === 'register'" (click)="activeView = 'register'">Create account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div *ngIf="activeView === 'login'">
+        <div class="form-title">Welcome back</div>
+        <div class="form-sub">Sign in to your AntalFintech account</div>
+
+        <div class="field">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" [(ngModel)]="email" placeholder="you@example.com" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" [(ngModel)]="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="remember">
+            <input type="checkbox" /> Remember me
+          </label>
+          <a class="forgot-link" (click)="activeView = 'forgot'">Forgot password?</a>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+        <button class="btn-primary" (click)="login()" [disabled]="loading">
+          <span *ngIf="!loading">Sign in to account</span>
+          <span *ngIf="loading">Signing in...</span>
+        </button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div *ngIf="activeView === 'register'">
+        <div class="form-title">Create account</div>
+        <div class="form-sub">Start your financial journey today</div>
+
+        <div class="two-col">
+          <div class="field">
+            <label>Full name</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" [(ngModel)]="fullName" placeholder="Akash Antal" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">&#64;</span>
+              <input type="text" [(ngModel)]="username" placeholder="akash123" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" [(ngModel)]="regEmail" placeholder="you@example.com" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" [(ngModel)]="regPassword" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</div>
+        <div class="success-msg" *ngIf="successMsg">{{ successMsg }}</div>
+
+        <button class="btn-primary" (click)="register()" [disabled]="loading">
+          <span *ngIf="!loading">Create my account</span>
+          <span *ngIf="loading">Creating account...</span>
+        </button>
+      </div>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <div *ngIf="activeView === 'forgot'">
+        <div class="form-title">Reset password</div>
+        <div class="form-sub">We'll send a reset link to your email</div>
+
+        <div class="field">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" [(ngModel)]="forgotEmail" placeholder="you@example.com" />
+          </div>
+        </div>
+
+        <button class="btn-primary" style="margin-top: 8px;">Send reset link</button>
+        <div class="back-link" (click)="activeView = 'login'">Back to <span>sign in</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
