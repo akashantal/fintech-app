@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Docker Buildx
+      # 2️⃣ Set up Docker Buildx (for multi-platform builds)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -28,19 +28,19 @@ jobs:
           DOCKER_COMPOSE_VERSION=2.22.0
           sudo curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker compose version
+          docker-compose version
 
       # 4️⃣ Build backend Docker image
       - name: Build Backend Docker Image
-        run: docker build -f backend/Dockerfile -t fintech-backend:ci backend
+        run: docker build -f backend/Dockerfile -t fintech-backend:ci backend/
 
       # 5️⃣ Build frontend Docker image
       - name: Build Frontend Docker Image
-        run: docker build -f frontend/fintech-ui/Dockerfile -t fintech-frontend:ci frontend/fintech-ui
+        run: docker build -f frontend/fintech-ui/Dockerfile -t fintech-frontend:ci frontend/fintech-ui/
 
-      # 6️⃣ Start all services using Docker Compose
-      - name: Start Docker services
-        run: docker compose -f docker-compose.yml up -d
+      # 6️⃣ Start Docker Compose services
+      - name: Start Docker Compose services
+        run: docker compose up -d
 
       # 7️⃣ Wait for Postgres DB to be ready
       - name: Wait for Postgres
@@ -51,14 +51,14 @@ jobs:
           done
 
       # 8️⃣ Run backend tests
-      - name: Run backend tests
+      - name: Run Backend Tests
         run: docker exec fintech-backend pytest || true
 
-      # 9️⃣ Build frontend inside container
-      - name: Build frontend
+      # 9️⃣ Build frontend (production)
+      - name: Build Frontend
         run: docker exec fintech-frontend npm run build -- --configuration production
 
-      # 🔟 Run end-to-end tests only on main
+      # 🔟 Run end-to-end tests only on main branch
       - name: Run E2E tests
         if: github.ref == 'refs/heads/main'
         run: docker exec fintech-backend pytest tests/e2e || true
@@ -66,4 +66,4 @@ jobs:
       # 1️⃣1️⃣ Clean up
       - name: Stop Docker Compose
         if: always()
-        run: docker compose -f docker-compose.yml down
+        run: docker compose down
