@@ -1,190 +1,198 @@
-import { OnInit } from '@angular/core';
-import { Component } from '@angular/core';
-import { ApiService } from '../../services/api.service';
-import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule ,HttpHeaders} from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { TransactionsComponent } from '../transactions/transactions.component';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
 
 interface Wallet {
   id: number;
   user_id: number;
   balance: number;
 }
+
 interface WalletResponse {
   message: string;
   created: boolean;
   wallet: Wallet;
 }
 
-
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
   standalone: true,
-  imports: [FormsModule, HttpClientModule, CommonModule],
-  styleUrls: ['./dashboard.component.css']
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
 })
-
 export class DashboardComponent implements OnInit {
 
   balance = 0;
   amount = 0;
+  receiver_id = 0;
+  transfer_amount = 0;
   is_loading = false;
   transactions: any[] = [];
-  userId: number = 0;
-  constructor(private api: ApiService, private http: HttpClient, private router: Router) {}
+  userId = 0;
+  initials = 'U';
+  greeting = 'morning';
 
-  receiver_id: number = 0;
-  transfer_amount: number = 0;
+  // Computed stats
+  totalSent = 0;
+  totalReceived = 0;
+  sentCount = 0;
+  receivedCount = 0;
 
-  getAuthHeaders() {
-  return new HttpHeaders({
-    Authorization: `Bearer ${localStorage.getItem('token')}`
-    });
-  }
+  // Feedback messages
+  addMoneySuccess = '';
+  addMoneyError = '';
+  transferSuccess = '';
+  transferError = '';
+
+  private baseUrl = 'http://localhost:8000';
+
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
-    this.userId = Number(localStorage.getItem('user_id'));
-    const token = localStorage.getItem('token'); // token check for authentication
-    
+    const token = localStorage.getItem('token');
     if (!token) {
-    this.router.navigate(['/login']);  // 🔒 block access
-    return;
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = Number(localStorage.getItem('user_id'));
+    this.setGreeting();
+    this.createWallet();
   }
-    this.createWallet(); // 🔥 auto-create wallet on dashboard load
 
+  setGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) this.greeting = 'morning';
+    else if (hour < 17) this.greeting = 'afternoon';
+    else this.greeting = 'evening';
+  }
+
+  getAuthHeaders() {
+    return new HttpHeaders({
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    });
   }
 
   createWallet() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-      alert('User ID not found');
-      return;
-    }
-    this.http.get<WalletResponse>(`http://localhost:8000/wallet/create/${userId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<WalletResponse>(
+      `${this.baseUrl}/wallet/create/${this.userId}`,
+      { headers: this.getAuthHeaders() }
+    ).subscribe({
       next: (res) => {
-        if(res.created) {
-          console.log('Wallet created:', res.wallet);
-        } else {
-          console.log('Wallet already exists:', res.wallet);
-        }
-        this.loadBalance(); // 🔥 refresh balance after wallet creation
-        this.loadTransactions();
-      },
-      error: (err) => {
-        console.error(err);
-        console.log('Wallet may already exist');
         this.loadBalance();
         this.loadTransactions();
       },
-    });
-  }
-
-  isDark = false;
-
-  toggleDarkMode() {
-    this.isDark = !this.isDark;
-    document.body.classList.toggle('dark-mode');
-  }
-
-  transferMoney() {
-    const sender_id = Number(localStorage.getItem('user_id'));
-    if (!sender_id || !this.receiver_id || !this.transfer_amount) {
-      alert('Enter valid details');
-      return;
-    }
-
-    this.http.post<any>(
-       `http://localhost:8000/transactions/transfer/${sender_id}/${this.receiver_id}`,
-     {headers: this.getAuthHeaders(), amount: this.transfer_amount }
-      ).subscribe({
-      next: () => {
-        alert('Payment successful');
-        this.loadBalance(); // 🔥 refresh balance after transfer
-        this.receiver_id = 0;
-        this.transfer_amount = 0;
-      },
-      error: (err) => console.error(err),
-      complete: () => {
+      error: () => {
+        this.loadBalance();
         this.loadTransactions();
       }
     });
-  } 
+  }
 
   loadBalance() {
-    this.is_loading = true;
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-      console.error('User ID not found');
-      return;
-    }
-    this.http.get<{ balance: number }>(`http://localhost:8000/wallet/balance/${userId}`)
-      .subscribe({
-        next: (res) => {
-          console.log(res);
-          this.balance = res.balance;
-          this.is_loading = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.is_loading = false;
-        }
-      });
+    this.http.get<{ balance: number }>(
+      `${this.baseUrl}/wallet/balance/${this.userId}`
+    ).subscribe({
+      next: (res) => { this.balance = res.balance; },
+      error: (err) => console.error(err)
+    });
   }
 
   addMoney() {
-    const userId = localStorage.getItem('user_id');
-    this.is_loading = true;
-    if (!userId || !this.amount) {
-      alert('Enter valid amount');
-      this.is_loading = false;
+    this.addMoneySuccess = '';
+    this.addMoneyError = '';
+    if (!this.amount || this.amount <= 0) {
+      this.addMoneyError = 'Please enter a valid amount.';
       return;
     }
-
-      this.http.post<any>(`http://localhost:8000/wallet/add-money/${userId}`, {
-        headers: this.getAuthHeaders(),
-        amount: this.amount
-      }).subscribe({
-        next: (res) => {
-          console.log('Money added:', res);
-          alert('Money added successfully');
-
-          this.loadBalance(); // 🔥 refresh balance
-          this.is_loading = false;
-          this.amount = 0;
-        },
-        error: (err) => {
-          console.error(err);
-          this.is_loading = false;
-        }
-      });
+    this.is_loading = true;
+    this.http.post<any>(
+      `${this.baseUrl}/wallet/add-money/${this.userId}`,
+      { amount: this.amount },
+      { headers: this.getAuthHeaders() }
+    ).subscribe({
+      next: (res) => {
+        this.addMoneySuccess = `Successfully added ₹${this.amount}`;
+        this.amount = 0;
+        this.is_loading = false;
+        this.loadBalance();
+        this.loadTransactions();
+        setTimeout(() => this.addMoneySuccess = '', 4000);
+      },
+      error: (err) => {
+        this.addMoneyError = err?.error?.detail || 'Failed to add money.';
+        this.is_loading = false;
+      }
+    });
   }
+
+  transferMoney() {
+    this.transferSuccess = '';
+    this.transferError = '';
+    if (!this.receiver_id || !this.transfer_amount || this.transfer_amount <= 0) {
+      this.transferError = 'Please enter valid receiver ID and amount.';
+      return;
+    }
+    if (this.receiver_id === this.userId) {
+      this.transferError = 'You cannot transfer to yourself.';
+      return;
+    }
+    this.is_loading = true;
+    this.http.post<any>(
+      `${this.baseUrl}/transactions/transfer/${this.userId}/${this.receiver_id}`,
+      { amount: this.transfer_amount },
+      { headers: this.getAuthHeaders() }
+    ).subscribe({
+      next: () => {
+        this.transferSuccess = `Successfully sent ₹${this.transfer_amount}`;
+        this.receiver_id = 0;
+        this.transfer_amount = 0;
+        this.is_loading = false;
+        this.loadBalance();
+        this.loadTransactions();
+        setTimeout(() => this.transferSuccess = '', 4000);
+      },
+      error: (err) => {
+        this.transferError = err?.error?.detail || 'Transfer failed. Check receiver ID and balance.';
+        this.is_loading = false;
+      }
+    });
+  }
+
   loadTransactions() {
-    this.is_loading = true;
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-      console.error('User ID not found');
-      return;
-    }
-    this.http.get<any>(`http://localhost:8000/transactions/history/${userId}`)
-      .subscribe({
-        next: (res) => {
-          console.log(res);
-          this.transactions = res.transactions;
-          this.is_loading = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.is_loading = false;
-        }
-      });
+    this.http.get<any>(
+      `${this.baseUrl}/transactions/history/${this.userId}`
+    ).subscribe({
+      next: (res) => {
+        this.transactions = res.transactions;
+        this.computeStats();
+      },
+      error: (err) => console.error(err)
+    });
   }
 
-  logout(){
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_id');
-      this.router.navigate(['/login']);
+  computeStats() {
+    this.totalSent = 0;
+    this.totalReceived = 0;
+    this.sentCount = 0;
+    this.receivedCount = 0;
+    for (const tx of this.transactions) {
+      if (tx.sender_id === this.userId) {
+        this.totalSent += tx.amount;
+        this.sentCount++;
+      }
+      if (tx.receiver_id === this.userId) {
+        this.totalReceived += tx.amount;
+        this.receivedCount++;
+      }
     }
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_id');
+    this.router.navigate(['/login']);
+  }
 }
