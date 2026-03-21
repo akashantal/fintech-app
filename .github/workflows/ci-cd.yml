@@ -17,9 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Install Docker Compose v2
         run: |
           DOCKER_COMPOSE_VERSION=2.22.0
@@ -27,9 +24,27 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
 
+      - name: Verify files exist
+        run: |
+          echo "=== Repo root ==="
+          ls -la
+          echo "=== Frontend folder ==="
+          ls -la frontend/
+          echo "=== fintech-ui folder ==="
+          ls -la frontend/fintech-ui/
+          echo "=== package.json ==="
+          ls -la frontend/fintech-ui/package.json
+
+      - name: Build frontend image directly
+        run: |
+          docker build \
+            -f frontend/Dockerfile \
+            -t fintech-frontend:ci \
+            ./frontend
+
       - name: Build and start Docker Compose
         run: |
-          docker-compose build
+          docker-compose build --no-cache
           docker-compose up -d
 
       - name: Wait for Postgres to be ready
