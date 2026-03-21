@@ -1,0 +1,58 @@
+/* 🌙 Global Dark Mode */
+body.dark-mode {
+  background-color: #0f172a;
+  color: white;
+}
+
+/* Cards */
+body.dark-mode .card {
+  background-color: #1e293b;
+  color: white;
+}
+
+/* Sidebar */
+body.dark-mode .sidebar {
+  background-color: #020617;
+}
+
+/* Table */
+body.dark-mode table {
+  color: white;
+}
+
+body.dark-mode th {
+  background-color: #1e293b;
+}
+
+/* Inputs */
+body.dark-mode input {
+  background-color: #334155;
+  color: white;
+  border: 1px solid #475569;
+}
+
+/* Buttons */
+body.dark-mode button {
+  background-color: #22c55e;
+}
+
+/* Smooth transitions everywhere */
+* {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Page fade-in */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

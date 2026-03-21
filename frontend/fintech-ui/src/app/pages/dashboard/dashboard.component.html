@@ -1,0 +1,62 @@
+<div class="container">
+
+  <h2 class="title">💳 Fintech Dashboard</h2>
+  <div class="main-content fade-in"></div>
+
+<button (click)="toggleDarkMode()">🌙 Toggle</button>
+  <!-- Balance Card -->
+  <div class="card balance-card">
+    <h3>Current Balance</h3>
+    <h1>₹ {{ balance }}</h1>
+  </div>
+
+  <!-- Add Money -->
+  <div class="card">
+    <h3>Add Money</h3>
+    <input type="number" [(ngModel)]="amount" placeholder="Enter amount" />
+    <button (click)="addMoney()">Add</button>
+  </div>
+
+  <!-- Transfer -->
+  <div class="card">
+    <h3>Transfer Money</h3>
+    <input type="number" [(ngModel)]="receiver_id" placeholder="Receiver ID" />
+    <input type="number" [(ngModel)]="transfer_amount" placeholder="Amount" />
+    <button (click)="transferMoney()">Send</button>
+  </div>
+
+  <!-- Transactions -->
+  <div class="card">
+    <h3>Transaction History</h3>
+
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Date</th>
+      </tr>
+
+      <tr *ngFor="let tx of transactions">
+        <td>{{ tx.id }}</td>
+        <td>₹ {{ tx.amount }}</td>
+        <td>
+          <span *ngIf="tx.sender_id === userId" class="debit">
+            💸 Debit
+          </span>
+          <span *ngIf="tx.receiver_id === userId" class="credit">
+            💰 Credit
+          </span>
+        </td>
+        <td>{{ tx.created_at | date:'short' }}</td>
+      </tr>
+    </table>
+  </div>
+  <div *ngIf="is_loading" class="loader-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Logout -->
+  <button class="logout-btn" (click)="logout()">Logout</button>
+
+</div>

@@ -1,0 +1,7 @@
+<h2>Send Money</h2>
+
+<form (ngSubmit)="send()">
+  <input [(ngModel)]="receiver_id" name="receiver" placeholder="Receiver ID">
+  <input [(ngModel)]="amount" name="amount" placeholder="Amount">
+  <button type="submit">Send</button>
+</form>
