@@ -32,6 +32,6 @@ export class ApiService {
   }
 
   getTransactions(userId: number) {
-    return this.http.get(`${this.baseUrl}/transactions/${userId}`);
+  return this.http.get(`${this.baseUrl}/transactions/history/${userId}`); 
   }
 }
