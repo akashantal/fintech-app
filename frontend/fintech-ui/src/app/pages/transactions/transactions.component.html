@@ -1,14 +1,36 @@
-<h2>Transactions</h2>
+<div class="transactions-container">
+  <h2 class="title">Transaction History</h2>
 
-<table>
-  <tr>
-    <th>Amount</th>
-    <th>Status</th>
-  </tr>
+  <div class="table-wrapper">
+    <table *ngIf="transactions.length > 0; else empty">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of transactions; let i = index">
+          <td class="index">{{ i + 1 }}</td>
+          <td class="amount">₹{{ t.amount | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge" [ngClass]="t.sender_id == currentUserId ? 'sent' : 'received'">
+              {{ t.sender_id == currentUserId ? '↑ Sent' : '↓ Received' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="t.status">
+              {{ t.status | titlecase }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-  <tr *ngFor="let t of transactions">
-    <td>{{ t.amount }}</td>
-    <td>{{ t.status }}</td>
-  </tr>
-</table>
-
+    <ng-template #empty>
+      <div class="empty">No transactions found.</div>
+    </ng-template>
+  </div>
+</div>

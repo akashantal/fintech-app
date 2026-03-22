@@ -15,14 +15,15 @@ import { CommonModule } from '@angular/common';
 export class TransactionsComponent implements OnInit {
 
   transactions: any[] = [];
+  currentUserId: number = 0;
 
   constructor(private api: ApiService) {}
 
   ngOnInit() {
-    const userId = Number(localStorage.getItem('user_id'));
+    this.currentUserId = Number(localStorage.getItem('user_id'));
 
-    this.api.getTransactions(userId).subscribe((res: any) => {
-      this.transactions = res;
+    this.api.getTransactions(this.currentUserId).subscribe((res: any) => {
+      this.transactions = res.transactions;
     });
   }
 }
