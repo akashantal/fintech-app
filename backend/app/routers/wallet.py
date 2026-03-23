@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.wallet import Wallet
 from app.schemas.wallet_schema import walletResponse, AddMoneyRequest
+from decimal import Decimal
 
 router = APIRouter(prefix="/wallet", tags=["Wallet"])
 
@@ -44,9 +45,7 @@ def add_money(user_id: int, request: AddMoneyRequest, db: Session = Depends(get_
         raise HTTPException(status_code=400, detail="Amount must be greater than 0")
 
     # ✅ Fix NULL balance issue
-    wallet.balance = wallet.balance or 0.0
-
-    wallet.balance += request.amount
+    wallet.balance = (wallet.balance or Decimal('0')) + Decimal(str(request.amount))
 
     db.commit()
     db.refresh(wallet)

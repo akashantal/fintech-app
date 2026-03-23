@@ -49,6 +49,7 @@ export class LoginComponent {
         console.log('USER ID:', res.user_id);
         localStorage.setItem('token', res.access_token);
         localStorage.setItem('user_id', res.user_id);
+        localStorage.setItem('user_name', res.full_name); // ✅ save name
         this.loading = false;
         this.router.navigate(['/dashboard']);
       },

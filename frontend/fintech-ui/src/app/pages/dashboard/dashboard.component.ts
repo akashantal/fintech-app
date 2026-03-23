@@ -10,6 +10,7 @@ interface Wallet {
   balance: number;
 }
 
+
 interface WalletResponse {
   message: string;
   created: boolean;
@@ -24,7 +25,7 @@ interface WalletResponse {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-
+  userName : string = '';
   balance = 0;
   amount = 0;
   receiver_id = 0;
@@ -58,6 +59,7 @@ export class DashboardComponent implements OnInit {
       return;
     }
     this.userId = Number(localStorage.getItem('user_id'));
+    this.userName = localStorage.getItem('user_name') || 'User';
     this.setGreeting();
     this.createWallet();
   }

@@ -36,4 +36,4 @@ def login(user: Userlogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     access_token = create_access_token(data={"sub": db_user.email})
-    return {"message": "Login successful", "access_token": access_token, "token_type": "bearer", "user_id": db_user.id}
+    return {"message": "Login successful", "access_token": access_token, "token_type": "bearer", "user_id": db_user.id, "full_name": db_user.full_name}
