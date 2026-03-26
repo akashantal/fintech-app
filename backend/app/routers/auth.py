@@ -27,7 +27,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     access_token = create_access_token(data={"sub": new_user.email})
-    return {"message": "User registered successfully", "access_token": access_token, "token_type": "bearer", "user_id": new_user.id}
+    return {"message": "User registered successfully", "access_token": access_token, "token_type": "bearer", "user_id": new_user.id, "full_name": new_user.full_name}
 
 @router.post("/login", response_model=Token)
 def login(user: Userlogin, db: Session = Depends(get_db)):
